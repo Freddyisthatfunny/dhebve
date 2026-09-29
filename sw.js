@@ -7,7 +7,7 @@
  * Downloads are cached, so games load fast and play offline after the first run.
  * COOP/COEP headers are added so SharedArrayBuffer works, and the mobile patch is injected into the engine page.
  */
-const SHELL_CACHE = 'exeplayer-shell-v7';
+const SHELL_CACHE = 'exeplayer-shell-v8';
 const ENGINE_CACHE = 'exeplayer-engine-v3';   // v3 = Wine 11 (web Direct3D)
 const SHELL = ['./', './index.html', './app.js', './player.js', './game.json', './controls.js', './engine-patch.js',
   './style.css', './jszip.min.js', './standalone.html'];
@@ -125,6 +125,17 @@ async function cachedFetch(local, remote, head) {
   return new Response(a, { status: 200, headers: h });
 }
 
+async function networkFirst(local, remote, head) {
+  const cache = await caches.open(ENGINE_CACHE);
+  try {
+    const r = await fetch(remote, Object.assign(fetchOpts(remote, head ? 'HEAD' : 'GET'), { cache: 'no-cache' }));
+    if (r.ok) { if (!head) cache.put(local, r.clone()).catch(() => {}); return r; }
+  } catch (e) {}
+  const hit = await cache.match(local);
+  if (hit) return head ? new Response(null, { status: 200, headers: hit.headers }) : hit;
+  return fetchWholeOrParts(remote, head);
+}
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' && req.method !== 'HEAD') return;
@@ -159,7 +170,9 @@ self.addEventListener('fetch', e => {
       else {
         const cfg = await siteConfig();
         const base = cfg && cfg.engineBase ? cfg.engineBase : scope.href;
-        try { resp = isolate(await cachedFetch(local, new URL(name, base).href, head), name); }
+        // small engine code files: network first so fixes arrive; big files (wasm, Wine zips): cache first
+        const small = /\.(js|html|css|json)$/i.test(name);
+        try { resp = isolate(small ? await networkFirst(local, new URL(name, base).href, head) : await cachedFetch(local, new URL(name, base).href, head), name); }
         catch { return new Response('engine file missing', { status: 404 }); }
       }
       if (!head && /\.html?$/i.test(name) && resp.ok) return injectPatch(resp);

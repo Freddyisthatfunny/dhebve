@@ -66,6 +66,9 @@
     ] }),
   };
 
+  // iOS mutes web audio when the silent switch is on; a "playback" session plays like a media app instead (Safari 16.4+)
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+
   class TouchControls {
     constructor({ overlay, frame, layout, onSave, onExit, title, icon }) {
       this.overlay = overlay; this.frame = frame; this.onSave = onSave; this.onExit = onExit;

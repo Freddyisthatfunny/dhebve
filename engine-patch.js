@@ -12,6 +12,8 @@
     try { Object.setPrototypeOf(Wrapped, Orig); } catch (e) {}
     window[name] = Wrapped;
   });
+  // iOS mutes web audio when the silent switch is on; a "playback" session plays like a media app instead (Safari 16.4+)
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
   var muted = false;
   window.__exeplayerResumeAudio = function () {
     if (muted) return;
