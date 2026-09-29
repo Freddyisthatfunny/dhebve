@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="__TITLE__">
+<meta name="theme-color" content="#0e0f13">
+<title>__TITLE__</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  #splash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center;
+    padding: calc(20px + var(--safe-t)) 20px calc(20px + var(--safe-b)); }
+  #splash .icon { width: 132px; height: 132px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  #splash h1 { margin: 0; font-size: 26px; letter-spacing: -.3px; }
+  #splash .primary { font-size: 18px; padding: 14px 40px; border-radius: 16px; }
+  #splash .links { display: flex; gap: 16px; }
+  #splash .links button { background: none; border: 0; color: var(--muted); font-size: 13px; padding: 4px; }
+  #installHint { max-width: 360px; }
+  #splash { overflow-y: auto; }
+  @media (max-height: 500px) {
+    #splash { gap: 10px; }
+    #splash .icon { width: 84px; height: 84px; border-radius: 20px; }
+    #splash h1 { font-size: 22px; }
+    #splash .primary { padding: 11px 34px; }
+    #splash p { margin: 0; }
+  }
+</style>
+</head>
+<body>
+<section id="splash" class="screen">
+  <img class="icon" src="icon-512.png" alt="">
+  <h1 id="gameTitle">__TITLE__</h1>
+  <button class="primary" id="playBtn" type="button">▶ Play</button>
+  <p id="status" class="small"></p>
+  <p id="installHint" class="small hidden">Tip: tap <b>Share → Add to Home Screen</b> to play full‑screen like an app.</p>
+  <div class="links"><button id="resetBtn" type="button">Reset touch controls</button></div>
+</section>
+
+<section id="player" class="screen hidden">
+  <iframe id="engineFrame" title="Game" allow="autoplay; fullscreen; gamepad"></iframe>
+  <div id="overlay"></div>
+</section>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="controls.js"></script>
+<script src="player.js"></script>
+</body>
+</html>

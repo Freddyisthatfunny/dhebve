@@ -1,0 +1,35 @@
+{
+ "file": "boxedwine.zip",
+ "size": 120947781,
+ "parts": [
+  {
+   "name": "boxedwine.zip.001",
+   "size": 17278255
+  },
+  {
+   "name": "boxedwine.zip.002",
+   "size": 17278255
+  },
+  {
+   "name": "boxedwine.zip.003",
+   "size": 17278255
+  },
+  {
+   "name": "boxedwine.zip.004",
+   "size": 17278255
+  },
+  {
+   "name": "boxedwine.zip.005",
+   "size": 17278255
+  },
+  {
+   "name": "boxedwine.zip.006",
+   "size": 17278255
+  },
+  {
+   "name": "boxedwine.zip.007",
+   "size": 17278251
+  }
+ ],
+ "source": "TinyCore15Wine11_0.zip (Wine 11 with web Direct3D), slimmed by ExePlayer"
+}

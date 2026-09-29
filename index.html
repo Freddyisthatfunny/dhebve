@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ExePlayer">
+<meta name="theme-color" content="#0e0f13">
+<title>ExePlayer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ LIBRARY ============ -->
+<section id="library" class="screen">
+  <header class="topbar">
+    <div class="brand"><img class="logo" src="icon-192.png" alt=""> ExePlayer</div>
+    <button id="engineChip" class="chip" type="button">Engine: checking…</button>
+  </header>
+
+  <div class="actions">
+    <button class="primary" id="addFilesBtn" type="button">＋ Add game</button>
+    <button id="addFolderBtn" type="button">＋ Add folder</button>
+  </div>
+  <p class="hint">Pick a <b>.zip</b>, a single <b>.exe</b>, or select the <b>.exe plus all its asset files</b> together. They're kept together in the same folder so the game finds its files.</p>
+
+  <div id="importProgress" class="progress hidden"><div class="bar"></div><span class="label"></span></div>
+
+  <div id="dlBanner" class="banner hidden"></div>
+  <div id="hero" class="hero hidden"></div>
+  <div class="libbar">
+    <input id="search" class="search hidden" type="search" placeholder="Search games" autocomplete="off">
+    <select id="sort" class="sort hidden" aria-label="Sort games">
+      <option value="recent">Recent</option><option value="name">Name</option><option value="size">Size</option>
+    </select>
+  </div>
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty hidden">
+    <div class="big">🎮</div>
+    <h2>Play Windows games on your iPad</h2>
+    <ol class="steps">
+      <li><b>Add a game</b> — a .zip of its folder, or the .exe together with its files.</li>
+      <li><b>Download Windows</b> once (about 170 MB) using the banner above, so games start faster.</li>
+      <li><b>Tap the game</b> to play. Tap ✎ in the game to move or change the buttons.</li>
+    </ol>
+    <p class="small">Works with 32‑bit Windows games, roughly from the Windows 95 – XP era.</p>
+  </div>
+  <p id="storage" class="storage small"></p>
+  <div id="dropHint" class="drop-hint hidden">Drop to add</div>
+
+  <input id="fileInput" type="file" multiple accept=".exe,.zip,.dll,*/*" hidden>
+  <input id="folderInput" type="file" webkitdirectory multiple hidden>
+  <input id="iconInput" type="file" accept="image/*" hidden>
+</section>
+
+<!-- ============ PLAYER ============ -->
+<section id="player" class="screen hidden">
+  <iframe id="engineFrame" title="Game" allow="autoplay; fullscreen; gamepad"></iframe>
+  <div id="overlay"></div>
+</section>
+
+<!-- ============ SHEETS ============ -->
+<div id="sheetBackdrop" class="backdrop hidden"></div>
+
+<div id="gameSheet" class="sheet hidden" role="dialog" aria-label="Game settings">
+  <h2>Game settings</h2>
+  <div class="icon-row">
+    <img id="gsIcon" class="icon-preview" alt="Game icon">
+    <div class="icon-btns">
+      <div class="small">Icon (optional)</div>
+      <button id="gsIconPick" type="button">Choose image…</button>
+      <button id="gsIconClear" type="button">Use default</button>
+    </div>
+  </div>
+  <label>Name <input id="gsName" type="text"></label>
+  <label>Program to run <select id="gsExe"></select></label>
+  <div class="row">
+    <label>Resolution
+      <select id="gsRes">
+        <option value="">Default</option><option>640x480</option><option>800x600</option>
+        <option>1024x768</option><option>1280x720</option><option>1280x1024</option>
+      </select>
+    </label>
+    <label>Colors
+      <select id="gsBpp"><option value="32">32‑bit</option><option value="16">16‑bit</option><option value="8">256 colors</option></select>
+    </label>
+  </div>
+  <div class="row">
+    <label class="check"><input id="gsSound" type="checkbox" checked> Sound</label>
+    <label class="check"><input id="gsDesktop" type="checkbox"> Open Windows desktop instead</label>
+  </div>
+  <label>Command‑line arguments <input id="gsArgs" type="text" placeholder="e.g. -window"></label>
+  <label>Touch control preset
+    <select id="gsPreset">
+      <option value="">Keep current layout</option>
+      <option value="arcade">Arrows + action buttons</option>
+      <option value="wasd">WASD + mouse buttons</option>
+      <option value="mouse">Mouse only (point & click / strategy)</option>
+    </select>
+  </label>
+  <button id="gsExport" class="wide-btn" type="button">🌐 Export as standalone website…</button>
+  <button id="gsResetSave" class="wide-btn" type="button">↺ Reset save data</button>
+  <div class="sheet-actions">
+    <button class="danger" id="gsDelete" type="button">Delete</button>
+    <span class="spacer"></span>
+    <button id="gsCancel" type="button">Cancel</button>
+    <button class="primary" id="gsSave" type="button">Save</button>
+  </div>
+</div>
+
+<div id="exportSheet" class="sheet hidden" role="dialog" aria-label="Export website">
+  <h2>Export as website</h2>
+  <p class="small">Makes a folder with <code>index.html</code> that runs just this game, with your touch layout. Upload its contents to any https host (GitHub Pages, Netlify, Cloudflare Pages) as its own site.</p>
+  <div class="icon-row">
+    <img id="exIcon" class="icon-preview" alt="Site icon">
+    <div class="icon-btns">
+      <div class="small">Home Screen icon (optional)</div>
+      <button id="exIconPick" type="button">Choose image…</button>
+      <button id="exIconClear" type="button">Use default</button>
+    </div>
+  </div>
+  <label>Site title <input id="exTitle" type="text"></label>
+  <label>Windows engine
+    <select id="exEngineMode">
+      <option value="shared">Use the engine from this ExePlayer site (small export)</option>
+      <option value="bundle">Include a copy of the engine (works anywhere, large)</option>
+      <option value="none">Don't include (I'll add engine files myself)</option>
+    </select>
+  </label>
+  <p id="exEngineHint" class="small"></p>
+  <p id="exSize" class="status small">Calculating size…</p>
+  <div id="exProgress" class="progress hidden"><div class="bar"></div><span class="label"></span></div>
+  <div class="sheet-actions">
+    <span class="spacer"></span>
+    <button id="exCancel" type="button">Cancel</button>
+    <button class="primary" id="exGo" type="button">Export .zip</button>
+  </div>
+</div>
+
+<div id="engineSheet" class="sheet hidden" role="dialog" aria-label="Engine setup">
+  <h2>Windows engine</h2>
+  <p id="engineStatus" class="status"></p>
+  <p class="small">ExePlayer runs games with <b>Boxedwine</b> (a PC emulator) and <b>Wine 11</b>, both built in — there's nothing to set up.</p>
+  <p class="small">Advanced: you can import a different Boxedwine file system zip; it's stored on this device.</p>
+  <div class="actions">
+    <button class="primary" id="engineImportBtn" type="button">Import engine files / zip</button>
+    <button class="danger" id="engineClearBtn" type="button">Remove imported</button>
+    <button id="engineRefreshBtn" type="button">Free up space</button>
+  </div>
+  <label>Wine file system <select id="rootSelect"></select></label>
+  <ul id="engineFiles" class="filelist"></ul>
+  <input id="engineInput" type="file" multiple hidden>
+  <div class="sheet-actions"><span class="spacer"></span><button class="primary" id="engineDone" type="button">Done</button></div>
+</div>
+
+<div id="exePick" class="sheet hidden" role="dialog" aria-label="Choose program">
+  <h2>Which program starts the game?</h2>
+  <div id="exePickList" class="picklist"></div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="jszip.min.js"></script>
+<script src="controls.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
